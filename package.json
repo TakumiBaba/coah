@@ -31,7 +31,8 @@
     "grunt-simple-mocha": "~0.4.0",
     "grunt-notify": "~0.2.17",
     "grunt-coffeelint": "0.0.8",
-    "grunt-concurrent": "~0.4.2"
+    "grunt-concurrent": "~0.4.2",
+    "grunt-cli": "~0.1.11"
   },
   "devDependencies": {
     "lodash": "~2.4.1",
