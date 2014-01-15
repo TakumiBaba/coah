@@ -14,13 +14,8 @@
     "direquire": "0.0.3",
     "mongoose": "~3.8.4",
     "debug": "~0.7.4"
-  },
-  "devDependencies": {
     "coffee-script": "~1.6.3",
     "coffee-errors": "~0.8.5",
-    "lodash": "~2.4.1",
-    "supertest": "~0.8.0",
-    "mocha": "~1.13.0",
     "grunt": "~0.4.1",
     "grunt-contrib-stylus": "~0.12.0",
     "grunt-contrib-coffee": "~0.8.0",
@@ -37,5 +32,10 @@
     "grunt-notify": "~0.2.17",
     "grunt-coffeelint": "0.0.8",
     "grunt-concurrent": "~0.4.2"
+  },
+  "devDependencies": {
+    "lodash": "~2.4.1",
+    "supertest": "~0.8.0",
+    "mocha": "~1.13.0"
   }
 }
