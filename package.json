@@ -34,8 +34,7 @@
     "grunt-contrib-watch": "git://github.com/gruntjs/grunt-contrib-watch.git",
     "grunt-simple-mocha": "~0.4.0",
     "grunt-notify": "~0.2.17",
-    "grunt-coffeelint": "0.0.8",
-    "grunt-concurrent": "~0.4.2"
+    "grunt-coffeelint": "0.0.8"
   },
   "devDependencies": {
     "lodash": "~2.4.1",
