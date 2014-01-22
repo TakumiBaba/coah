@@ -20,16 +20,20 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-coffeelint'
   grunt.loadNpmTasks 'grunt-simple-mocha'
   grunt.loadNpmTasks 'grunt-notify'
-  grunt.loadNpmTasks 'grunt-concurrent'
+  # grunt.loadNpmTasks 'grunt-concurrent'
+
 
   grunt.registerTask 'build', [
     'clean'
-    'concurrent:build'
+    'buildjs'
+    'buildcss'
+    'buildhtml'
     'buildstatic'
   ]
 
   grunt.registerTask 'test', [
-    'concurrent:test'
+    'coffeelint:server'
+    'simplemocha'
   ]
 
   grunt.registerTask 'server', [ 'run', 'coah' ]
@@ -79,10 +83,6 @@ module.exports = (grunt) ->
   grunt.initConfig
 
     pkg: grunt.file.readJSON 'package.json'
-
-    concurrent:
-      test: [ 'coffeelint:server', 'simplemocha' ]
-      build: [ 'buildjs', 'buildcss', 'buildhtml' ]
 
     clean:
       dist: [ '.tmp' ]
@@ -260,7 +260,7 @@ module.exports = (grunt) ->
         tasks: [ 'buildhtml' ]
         files: [ 'app/assets/**/*.jade' ]
       test:
-        tasks: [ 'concurrent:test' ]
+        tasks: [ 'test' ]
         files: [
           '{tests,config,app}/**/*.{js,coffee,json}'
           '!app/assets'
