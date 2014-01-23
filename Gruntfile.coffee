@@ -281,7 +281,6 @@ module.exports = (grunt) ->
       options:
         livereload: yes
         interrupt: yes
-        spawn: yes
       static:
         tasks: [ 'buildstatic' ]
         files: [ 'app/assets/**/*', '!app/assets/**/*.{coffee,styl,jade}' ]
