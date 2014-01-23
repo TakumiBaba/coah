@@ -61,9 +61,10 @@ module.exports = (grunt) ->
         process.exit 130
       cluster.on 'exit', (worker) ->
         grunt.log.writeln "coah worker exit ##{worker.process.pid}"
+        delete require.cache[path.resolve 'config', 'env.json']
         for pid, i in pids when worker.process.pid is pid
           pids.splice i, 1
-          worker = cluster.fork(require path.resolve 'config', 'env')
+          worker = cluster.fork require path.resolve 'config', 'env'
           pids.push worker.process.pid
           break
         fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
