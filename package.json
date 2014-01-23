@@ -14,11 +14,15 @@
   "dependencies": {
     "express": "~3.4.8",
     "jade": "~1.1.4",
-    "direquire": "0.0.3",
-    "mongoose": "~3.8.4",
     "debug": "~0.7.4",
+    "direquire": "0.0.3",
     "coffee-script": "~1.6.3",
-    "coffee-errors": "~0.8.5",
+    "coffee-errors": "~0.8.5"
+  },
+  "devDependencies": {
+    "lodash": "~2.4.1",
+    "supertest": "~0.8.0",
+    "mocha": "~1.13.0",
     "grunt": "~0.4.1",
     "grunt-cli": "~0.1.11",
     "grunt-contrib-stylus": "~0.12.0",
@@ -34,11 +38,7 @@
     "grunt-contrib-watch": "git://github.com/gruntjs/grunt-contrib-watch.git",
     "grunt-simple-mocha": "~0.4.0",
     "grunt-notify": "~0.2.17",
-    "grunt-coffeelint": "0.0.8"
-  },
-  "devDependencies": {
-    "lodash": "~2.4.1",
-    "supertest": "~0.8.0",
-    "mocha": "~1.13.0"
+    "grunt-coffeelint": "0.0.8",
+    "mongoose": "~3.8.4"
   }
 }

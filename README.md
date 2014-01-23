@@ -6,6 +6,10 @@
 
 coah, node.js WAF template.
 
+## requirement
+
+* node.js
+* mongodb
 
 ## about
 

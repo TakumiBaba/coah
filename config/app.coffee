@@ -15,6 +15,7 @@ for k, v of require path.resolve 'config', 'env'
   process.env[k.toUpperCase()] = v
 
 process.env.NODE_ENV or= 'development'
+debug "environment #{k.toUpperCase()} -> #{v}"
 
 # Database
 

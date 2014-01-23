@@ -20,8 +20,6 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-coffeelint'
   grunt.loadNpmTasks 'grunt-simple-mocha'
   grunt.loadNpmTasks 'grunt-notify'
-  # grunt.loadNpmTasks 'grunt-concurrent'
-
 
   grunt.registerTask 'build', [
     'clean'
@@ -93,7 +91,7 @@ module.exports = (grunt) ->
         files: [{
           expand: yes
           cwd: 'app/assets/'
-          src: [ '**/*' , '!**/*.{coffee,styl,jade}' ]
+          src: [ '**/*' , '!**/*.{min.js,coffee,styl,jade}' ]
           dest: '.tmp'
         }]
       release:

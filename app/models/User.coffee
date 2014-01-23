@@ -30,7 +30,4 @@ UserModel.statics.findOrCreateByTwitter = (token, secret, profile, done) ->
       secret: secret
     user.save done
 
-UserModel.statics.__defineGetter__ 'find', ->
-  debug 'find'
-
 exports.User = mongoose.model 'users', UserModel

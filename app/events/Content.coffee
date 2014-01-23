@@ -1,4 +1,5 @@
 debug = require('debug')('coah:events:content')
+
 exports.Content = (app) ->
 
   {User} = app.get 'models'
