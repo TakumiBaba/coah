@@ -116,7 +116,7 @@ module.exports = (grunt) ->
     pkg: grunt.file.readJSON 'package.json'
 
     restart:
-      interval: 2500
+      interval: 1200
 
     clean:
       dist: [ '.tmp' ]
