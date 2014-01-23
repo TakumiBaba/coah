@@ -1,8 +1,11 @@
 'use strict'
 
-path = require 'path'
-
 module.exports = (grunt) ->
+
+  os = require 'os'
+  path = require 'path'
+  cluster = require 'cluster'
+  env = require path.resolve 'config', 'env'
 
   require 'coffee-script'
   require 'coffee-errors'
@@ -34,18 +37,26 @@ module.exports = (grunt) ->
     'simplemocha'
   ]
 
-  grunt.registerTask 'server', [ 'run', 'coah' ]
-
-  grunt.registerTask 'coah', 'Waiting async.', ->
+  grunt.registerTask 'server', 'Start coah web server.', ->
     done = @async()
 
-  grunt.registerTask 'run', 'Start coah web server.', ->
-    done = @async()
-    {server} = require path.resolve 'config', 'app'
-    grunt.log.writeln "coah running mode #{process.env.NODE_ENV}"
-    server.listen (process.env.PORT || 3000), ->
-      grunt.log.write "coah listening on port #{process.env.PORT || 3000}\n"
-      return done()
+    if cluster.isMaster
+      grunt.log.writeln "forking child from master process ##{process.pid}"
+      pids = []
+      cluster.on 'exit', (worker) ->
+        grunt.log.writeln "coah worker exit ##{worker.process.pid}"
+        for pid, i in pids when worker.pid is pid
+          pids.splice i, 1
+          pids.push cluster.fork().process.pid
+      for i in [0...os.cpus().length]
+        worker = cluster.fork(require path.resolve 'config', 'env')
+        pids.push worker.process.pid
+
+    else
+      {server} = require path.resolve 'config', 'app'
+      server.listen (process.env.PORT || 3000), ->
+        grunt.log.writeln "coah running mode #{process.env.NODE_ENV}"
+        grunt.log.writeln "coah listening on port #{process.env.PORT || 3000}"
 
   grunt.registerTask 'all', [
     'build', 'test', 'run', 'watch'

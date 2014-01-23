@@ -8,15 +8,6 @@ express = require 'express'
 mongoose = require 'mongoose'
 direquire = require 'direquire'
 
-# Environment
-
-for k, v of require path.resolve 'config', 'env'
-  debug "mapping env #{k.toUpperCase()} -> #{v}"
-  process.env[k.toUpperCase()] = v
-
-process.env.NODE_ENV or= 'development'
-debug "environment #{k.toUpperCase()} -> #{v}"
-
 # Database
 
 if process.env.MONGO
@@ -44,13 +35,11 @@ if process.env.NODE_ENV isnt 'production'
   app.use express.errorHandler()
   debug "using error handler"
 
-
 # Routes
 
 Content = (app.get 'events').Content app
 
 app.get '/:username',  Content.user
-
 
 # Server
 
