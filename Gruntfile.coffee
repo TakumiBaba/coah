@@ -54,7 +54,11 @@ module.exports = (grunt) ->
     pids = []
 
     if cluster.isMaster
-      grunt.log.writeln "forking child from master process ##{process.pid}"
+      cpus = os.cpus().length
+      grunt.log.writeln "#{cpus} cluster ##{process.pid}"
+      process.on 'SIGINT', ->
+        fs.unlinkSync path.resolve '.pids'
+        process.exit 130
       cluster.on 'exit', (worker) ->
         grunt.log.writeln "coah worker exit ##{worker.process.pid}"
         for pid, i in pids when worker.process.pid is pid
@@ -63,7 +67,7 @@ module.exports = (grunt) ->
           pids.push worker.process.pid
           break
         fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
-      for i in [0...os.cpus().length]
+      for i in [0...cpus]
         worker = cluster.fork(require path.resolve 'config', 'env')
         pids.push worker.process.pid
       fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
@@ -111,8 +115,6 @@ module.exports = (grunt) ->
 
     pkg: grunt.file.readJSON 'package.json'
 
-    pids: []
-
     restart:
       interval: 2500
 
@@ -125,7 +127,7 @@ module.exports = (grunt) ->
         files: [{
           expand: yes
           cwd: 'app/assets/'
-          src: [ '**/*' , '!**/*.{min.js,coffee,styl,jade}' ]
+          src: [ '**/*' , '!**/*.{coffee,styl,jade}' ]
           dest: '.tmp'
         }]
       release:
