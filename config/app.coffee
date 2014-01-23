@@ -39,6 +39,7 @@ if process.env.NODE_ENV isnt 'production'
 
 Content = (app.get 'events').Content app
 
+app.get '/exit', -> process.exit 1
 app.get '/:username',  Content.user
 
 # Server

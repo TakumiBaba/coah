@@ -1,11 +1,12 @@
 'use strict'
 
-module.exports = (grunt) ->
+fs = require 'fs'
+os = require 'os'
+path = require 'path'
+async = require 'async'
+cluster = require 'cluster'
 
-  os = require 'os'
-  path = require 'path'
-  cluster = require 'cluster'
-  env = require path.resolve 'config', 'env'
+module.exports = (grunt) ->
 
   require 'coffee-script'
   require 'coffee-errors'
@@ -37,26 +38,43 @@ module.exports = (grunt) ->
     'simplemocha'
   ]
 
+  grunt.registerTask 'restart', 'Graceful restart', ->
+    done = @async()
+    pids = JSON.parse fs.readFileSync (path.resolve './.pids'), 'utf-8'
+
+    async.eachSeries pids, (pid, next) ->
+      setTimeout ->
+        process.kill pid
+        return next()
+      , grunt.config 'restart.interval'
+    , done
+
   grunt.registerTask 'server', 'Start coah web server.', ->
     done = @async()
+    pids = []
 
     if cluster.isMaster
       grunt.log.writeln "forking child from master process ##{process.pid}"
-      pids = []
       cluster.on 'exit', (worker) ->
         grunt.log.writeln "coah worker exit ##{worker.process.pid}"
-        for pid, i in pids when worker.pid is pid
+        for pid, i in pids when worker.process.pid is pid
           pids.splice i, 1
-          pids.push cluster.fork().process.pid
+          worker = cluster.fork(require path.resolve 'config', 'env')
+          pids.push worker.process.pid
+          break
+        fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
       for i in [0...os.cpus().length]
         worker = cluster.fork(require path.resolve 'config', 'env')
         pids.push worker.process.pid
+      fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
 
     else
       {server} = require path.resolve 'config', 'app'
       server.listen (process.env.PORT || 3000), ->
-        grunt.log.writeln "coah running mode #{process.env.NODE_ENV}"
-        grunt.log.writeln "coah listening on port #{process.env.PORT || 3000}"
+        grunt.log.write "coah listening"
+        grunt.log.write " on port #{process.env.PORT || 3000}"
+        grunt.log.write " with mode #{process.env.NODE_ENV}"
+        grunt.log.writeln " ##{process.pid}"
 
   grunt.registerTask 'all', [
     'build', 'test', 'run', 'watch'
@@ -92,6 +110,11 @@ module.exports = (grunt) ->
   grunt.initConfig
 
     pkg: grunt.file.readJSON 'package.json'
+
+    pids: []
+
+    restart:
+      interval: 2500
 
     clean:
       dist: [ '.tmp' ]
@@ -269,8 +292,8 @@ module.exports = (grunt) ->
         tasks: [ 'buildhtml' ]
         files: [ 'app/assets/**/*.jade' ]
       test:
-        tasks: [ 'test' ]
+        tasks: [ 'test', 'restart' ]
         files: [
-          '{tests,config,app}/**/*.{js,coffee,json}'
-          '!app/assets'
+          '{tests,config}/**/*.{js,coffee,json}'
+          'app/{events,helper,models}/**/*.{js,coffee}'
         ]
