@@ -3,7 +3,7 @@
 
 node_modules
 
-.tmp
+dist
 public
 config/env.json
 npm-debug.log

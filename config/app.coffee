@@ -35,13 +35,13 @@ if process.env.NODE_ENV isnt 'production'
   app.use express.errorHandler()
   debug "using error handler"
 
-# Routes
-
-Content = (app.get 'events').Content app
-
-app.get '/exit', -> process.exit 1
-app.get '/:username',  Content.user
-
 # Server
 
 server = exports.server = http.createServer app
+
+# Routes
+
+route = require path.resolve 'config', 'routes'
+
+route.http app
+

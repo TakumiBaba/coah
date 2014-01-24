@@ -120,17 +120,10 @@ module.exports = (grunt) ->
       interval: 1200
 
     clean:
-      dist: [ '.tmp' ]
+      dist: [ 'dist' ]
       release: [ 'public' ]
 
     copy:
-      dist:
-        files: [{
-          expand: yes
-          cwd: 'app/assets/'
-          src: [ '**/*' , '!**/*.{coffee,styl,jade}' ]
-          dest: '.tmp'
-        }]
       release:
         files: [{
           expand: yes
@@ -193,7 +186,7 @@ module.exports = (grunt) ->
         'unqualified-attributes': off
       client:
         files: [
-          { expand: yes, cwd: '.tmp/', src: [ '**/*.styl' ] }
+          { expand: yes, cwd: 'dist/', src: [ '**/*.styl' ] }
         ]
 
     htmlhint:
@@ -201,7 +194,7 @@ module.exports = (grunt) ->
         'tag-pair': on
       client:
         files: [
-          { expand: yes, cwd: '.tmp/', src: [ '**/*.html' ] }
+          { expand: yes, cwd: 'dist/', src: [ '**/*.html' ] }
         ]
 
     coffee:
@@ -210,7 +203,7 @@ module.exports = (grunt) ->
           expand: yes
           cwd: 'app/assets/'
           src: [ '*.coffee', '**/*.coffee' ]
-          dest: '.tmp/'
+          dest: 'dist/'
           ext: '.js'
         }]
 
@@ -222,7 +215,7 @@ module.exports = (grunt) ->
           expand: yes
           cwd: 'app/assets/'
           src: [ '*.styl', '**/*.styl' ]
-          dest: '.tmp/'
+          dest: 'dist/'
           ext: '.css'
         }]
       release:
@@ -244,7 +237,7 @@ module.exports = (grunt) ->
           expand: yes
           cwd: 'app/assets/'
           src: [ '*.jade', '**/*.jade' ]
-          dest: '.tmp/'
+          dest: 'dist/'
           ext: '.html'
         }]
       release:
@@ -262,7 +255,7 @@ module.exports = (grunt) ->
       release:
         files: [{
           expand: yes
-          cwd: '.tmp/'
+          cwd: 'dist/'
           src: [ '*.js', '**/*.js' ]
           dest: 'public/'
           ext: '.js'
