@@ -2,10 +2,10 @@
   "name": "coah",
   "version": "0.1.0",
   "scripts": {
-    "prestart": "grunt build",
-    "start": "grunt server",
-    "pretest": "grunt build",
-    "test": "grunt test"
+    "prestart": "./node_modules/.bin/grunt build",
+    "start": "./node_modules/.bin/grunt server",
+    "pretest": "./node_modules/.bin/grunt build",
+    "test": "./node_modules/.bin/grunt test"
   },
   "engines": {
     "node": "~0.10.0",
@@ -42,6 +42,7 @@
     "grunt-contrib-watch": "git://github.com/gruntjs/grunt-contrib-watch.git",
     "grunt-simple-mocha": "~0.4.0",
     "grunt-notify": "~0.2.17",
-    "grunt-coffeelint": "0.0.8"
+    "grunt-coffeelint": "0.0.8",
+    "lodash": "~2.4.1"
   }
 }
