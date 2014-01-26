@@ -1,5 +1,4 @@
 mongoose = require 'mongoose'
-debug = require('debug')('coah:models:user')
 
 UserModel = new mongoose.Schema
   id: type: Number, unique: yes

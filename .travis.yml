@@ -3,6 +3,7 @@ node_js:
   - 0.10
 services:
   - mongodb
+  - redis-server
 before_script:
   - "npm i -g grunt-cli"
   - "cp config/env.json{.sample,}"

@@ -14,15 +14,14 @@
   "dependencies": {
     "express": "~3.4.8",
     "mongoose": "~3.8.4",
-    "jade": "~1.1.4",
-    "debug": "~0.7.4",
     "async": "~0.2.10",
     "direquire": "0.0.3",
     "coffee-script": "~1.6.3",
     "coffee-errors": "~0.8.5",
     "connect-redis": "~1.4.6",
     "socket.io": "~0.9.16",
-    "passport": "~0.2.0"
+    "passport": "~0.2.0",
+    "debug": "~0.7.4"
   },
   "devDependencies": {
     "socket.io-client": "~0.9.16",

@@ -51,10 +51,10 @@ route.http app
 
 unless parseInt process.env.DISABLE_WEBSOCKET
   redis = require 'socket.io/node_modules/redis'
-  io = exports.io = (require 'socket.io').listen server
-  io.set 'log level', 0
-  io.set 'browser client minification', yes
-  io.set 'browser client etag', yes
+  io = exports.io = (require 'socket.io').listen server,
+    'browser client minification': yes
+    'browser client etag': yes
+    'log': no
   io.set 'store', new (require 'socket.io/lib/stores/redis')
     redisPub: redis.createClient()
     residSub: redis.createClient()

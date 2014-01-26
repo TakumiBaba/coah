@@ -1,5 +1,4 @@
 path = require 'path'
-debug = require('debug')('coah:session')
 express = require 'express'
 redisstore = require 'connect-redis'
 
