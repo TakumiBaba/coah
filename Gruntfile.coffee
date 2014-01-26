@@ -136,15 +136,9 @@ module.exports = (grunt) ->
         files: [
           {
             expand: yes
-            cwd: 'app/assets/'
+            cwd: 'assets'
             src: [ '**/*', '!**/*.{jpg,png,gif,coffee,styl,jade}' ]
             dest: 'public'
-          }
-          {
-            expand: yes
-            cwd: 'app/vendor/'
-            src: [ '**/*' ]
-            dest: 'public/vendor'
           }
         ]
 
@@ -152,9 +146,9 @@ module.exports = (grunt) ->
       dist:
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '**/*.{jpg,png,gif}' ]
-          dest: 'public/'
+          dest: 'public'
         }]
 
     coffeelint:
@@ -169,14 +163,14 @@ module.exports = (grunt) ->
           level: 'error'
       client:
         files: [
-          { expand: yes, cwd: 'app/assets/', src: [ '**/*.coffee' ] }
+          { expand: yes, cwd: 'assets', src: [ '**/*.coffee' ] }
         ]
       server:
         files: [
-          { expand: yes, cwd: 'app/events/', src: [ '**/*.coffee' ] }
-          { expand: yes, cwd: 'app/helper/', src: [ '**/*.coffee' ] }
-          { expand: yes, cwd: 'app/models/', src: [ '**/*.coffee' ] }
-          { expand: yes, cwd: 'tests/', src: [ '**/*.coffee' ] }
+          { expand: yes, cwd: 'events', src: [ '**/*.coffee' ] }
+          { expand: yes, cwd: 'helper', src: [ '**/*.coffee' ] }
+          { expand: yes, cwd: 'models', src: [ '**/*.coffee' ] }
+          { expand: yes, cwd: 'tests', src: [ '**/*.coffee' ] }
         ]
 
     csslint:
@@ -200,7 +194,7 @@ module.exports = (grunt) ->
         'unqualified-attributes': off
       client:
         files: [
-          { expand: yes, cwd: 'dist/', src: [ '**/*.styl' ] }
+          { expand: yes, cwd: '.tmp', src: [ '**/*.styl' ] }
         ]
 
     htmlhint:
@@ -208,16 +202,16 @@ module.exports = (grunt) ->
         'tag-pair': on
       client:
         files: [
-          { expand: yes, cwd: 'dist/', src: [ '**/*.html' ] }
+          { expand: yes, cwd: '.tmp', src: [ '**/*.html' ] }
         ]
 
     coffee:
       dist:
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '*.coffee', '**/*.coffee' ]
-          dest: 'dist/'
+          dest: '.tmp'
           ext: '.js'
         }]
 
@@ -227,9 +221,9 @@ module.exports = (grunt) ->
           compress: no
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '*.styl', '**/*.styl' ]
-          dest: 'dist/'
+          dest: '.tmp'
           ext: '.css'
         }]
       release:
@@ -237,9 +231,9 @@ module.exports = (grunt) ->
           compress: yes
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '*.styl', '**/*.styl' ]
-          dest: 'public/'
+          dest: 'public'
           ext: '.css'
         }]
 
@@ -249,9 +243,9 @@ module.exports = (grunt) ->
           pretty: yes
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '*.jade', '**/*.jade' ]
-          dest: 'dist/'
+          dest: '.tmp'
           ext: '.html'
         }]
       release:
@@ -259,9 +253,9 @@ module.exports = (grunt) ->
           pretty: no
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '*.jade', '**/*.jade' ]
-          dest: 'public/'
+          dest: 'public'
           ext: '.html'
         }]
 
@@ -269,9 +263,9 @@ module.exports = (grunt) ->
       release:
         files: [{
           expand: yes
-          cwd: 'dist/'
+          cwd: '.tmp'
           src: [ '*.js', '**/*.js' ]
-          dest: 'public/'
+          dest: 'public'
           ext: '.js'
         }]
 
@@ -290,19 +284,19 @@ module.exports = (grunt) ->
         interrupt: yes
       static:
         tasks: [ 'buildstatic' ]
-        files: [ 'app/assets/**/*', '!app/assets/**/*.{coffee,styl,jade}' ]
+        files: [ 'assets/**/*', '!assets/**/*.{coffee,styl,jade}' ]
       coffee:
         tasks: [ 'buildjs' ]
-        files: [ 'app/assets/**/*.coffee' ]
+        files: [ 'assets/**/*.coffee' ]
       stylus:
         tasks: [ 'buildcss' ]
-        files: [ 'app/assets/**/*.styl' ]
+        files: [ 'assets/**/*.styl' ]
       jade:
         tasks: [ 'buildhtml' ]
-        files: [ 'app/**/*.jade' ]
+        files: [ 'assets/**/*.jade' ]
       test:
         tasks: [ 'test', 'restart' ]
         files: [
           '{tests,config}/**/*.{js,coffee,json}'
-          'app/{events,helper,models}/**/*.{js,coffee}'
+          '{events,helper,models}/**/*.{js,coffee,json}'
         ]

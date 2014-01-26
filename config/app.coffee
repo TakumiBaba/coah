@@ -3,25 +3,31 @@
 fs = require 'fs'
 path = require 'path'
 http = require 'http'
+_ = require 'lodash'
+session = require 'connect-redis'
 express = require 'express'
 mongoose = require 'mongoose'
 passport = require 'passport'
 direquire = require 'direquire'
 
+pkg = require path.resolve 'package'
+
 # Database
 
-unless process.env.DISABLE_MONGODB
-  mongoose.connect process.env.MONGO_DB
+mongoose.connect process.env.MONGODB
+
+# Session
+
+session_store = new (session express)
+  prefix: "sess_#{pkg.name}:"
 
 # Application
 
-session = require path.resolve 'config', 'session'
-
 app = exports.app = express()
 app.disable 'x-powerd-by'
-app.set 'events', direquire path.resolve 'app', 'events'
-app.set 'models', direquire path.resolve 'app', 'models'
-app.set 'helper', direquire path.resolve 'app', 'helper'
+app.set 'events', direquire path.resolve 'events'
+app.set 'models', direquire path.resolve 'models'
+app.set 'helper', direquire path.resolve 'helper'
 app.use express.favicon()
 unless process.env.NODE_ENV is 'test'
   app.use express.logger 'dev'
@@ -29,7 +35,10 @@ app.use express.json()
 app.use express.urlencoded()
 app.use express.methodOverride()
 app.use express.cookieParser()
-app.use session.middleware
+app.use express.session
+  store: session_store
+  secret: process.env.SESSION_SECRET
+  cookie: expires: no
 app.use passport.initialize()
 app.use passport.session()
 app.use app.router
@@ -49,27 +58,25 @@ route.http app
 
 # WebSocket
 
-unless parseInt process.env.DISABLE_WEBSOCKET
-  redis = require 'socket.io/node_modules/redis'
-  io = exports.io = (require 'socket.io').listen server,
-    'browser client minification': yes
-    'browser client etag': yes
-    'log': no
-  io.set 'store', new (require 'socket.io/lib/stores/redis')
-    redisPub: redis.createClient()
-    residSub: redis.createClient()
-    redisClient: redis.createClient()
-  io.set 'authorization', (data, accept) ->
-    data.user = {}
-    data.auth = no
-    return accept null, yes unless data.headers?.cookie?
-    (express.cookieParser process.env.SESSION_SECRET) data, {}, (err) ->
-      return accept err, no if err
-      cookies = data.signedCookies['connect.sid']
-      return session.store.load cookies, (err, session) ->
-        return accept err, no if err
-        [data.auth, data.user] = [yes, session.passport.user] if session
-        return accept null, yes
+redis = require 'socket.io/node_modules/redis'
+io = exports.io = (require 'socket.io').listen server,
+  'browser client minification': yes
+  'browser client etag': yes
+  'log': no
+io.set 'store', new (require 'socket.io/lib/stores/redis')
+  redisPub: redis.createClient()
+  residSub: redis.createClient()
+  redisClient: redis.createClient()
+io.set 'authorization', (data, done) ->
+  _.defaults data, { user: {}, auth: no }
+  return done null, yes unless data.headers?.cookie?
+  (express.cookieParser process.env.SESSION_SECRET) data, {}, (err) ->
+    return done err, no if err
+    cookies = data.signedCookies['connect.sid']
+    return session_store.load cookies, (err, sess) ->
+      return done err, no if err
+      [data.auth, data.user] = [yes, sess.passport.user] if sess
+      return done null, yes
 
-  route.websocket app, io
+route.websocket app, io
 

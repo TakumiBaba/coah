@@ -4,7 +4,7 @@
 node_modules
 
 .pids
-dist
+.tmp
 public
 config/env.json
 npm-debug.log

@@ -1,0 +1,19 @@
+doctype html
+html
+  head
+    title coah
+    link(rel='stylesheet', href='/css/style.css')
+
+  body
+    h1 Coah
+    img(src='/img/coah.png', width=88)
+
+    script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.0/backbone-min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/backbone.stickit/0.7.0/backbone.stickit.min.js")
+    script(src="//cdnjs.cloudflare.com/ajax/libs/backbone.marionette/1.4.1-bundled/backbone.marionette.min.js")
+    script#tmpl-test(type='text/template')
+      include ../templs/test.jade
+    script(src='/js/script.js')
+
