@@ -39,17 +39,17 @@ describe 'coah', ->
 
   # テストすることがない
 
-  it 'sohuld be index', (done) ->
-    request(app)
-      .get('/')
-      .expect(200)
-      .end done
+  #it 'sohuld be index', (done) ->
+  #  request(app)
+  #    .get('/')
+  #    .expect(200)
+  #    .end done
 
-  it 'should be static file serving', (done) ->
-    file = fs.readFileSync path.resolve('public', 'css', 'style.css'), 'utf-8'
-    request(app)
-      .get('/css/style.css')
-      .expect(200)
-      .expect(file)
-      .end done
+  #it 'should be static file serving', (done) ->
+  #  file = fs.readFileSync path.resolve('public', 'css', 'style.css'), 'utf-8'
+  #  request(app)
+  #    .get('/css/style.css')
+  #    .expect(200)
+  #    .expect(file)
+  #    .end done
 

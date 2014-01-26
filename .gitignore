@@ -3,7 +3,9 @@
 
 node_modules
 
+.pids
 dist
 public
 config/env.json
 npm-debug.log
+app/vendor

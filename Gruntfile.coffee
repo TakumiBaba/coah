@@ -54,22 +54,31 @@ module.exports = (grunt) ->
     pids = []
 
     if cluster.isMaster
+      envs = (env = {}) ->
+        delete require.cache[path.resolve 'config', 'env.json']
+        if fs.existsSync path.resolve 'config', 'env.json'
+          env = require path.resolve 'config', 'env'
+        env.PORT or= process.env.PORT or 3000
+        env.NODE_ENV or= process.env.NODE_ENV or 'development'
+        env.SESSION_SECRET or= process.env.SESSION_SECRET or process.env.SECURITYSESSIONID
+        return env
+
       cpus = os.cpus().length
-      grunt.log.writeln "#{cpus} cluster ##{process.pid}"
+
       process.on 'SIGINT', ->
         fs.unlinkSync path.resolve '.pids'
         process.exit 130
+
       cluster.on 'exit', (worker) ->
-        grunt.log.writeln "coah worker exit ##{worker.process.pid}"
-        delete require.cache[path.resolve 'config', 'env.json']
-        for pid, i in pids when worker.process.pid is pid
+        for pid, i in pids when worker.process.pid is pid by -1
           pids.splice i, 1
-          worker = cluster.fork require path.resolve 'config', 'env'
+          worker = cluster.fork envs()
           pids.push worker.process.pid
           break
         fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
+
       for i in [0...cpus]
-        worker = cluster.fork(require path.resolve 'config', 'env')
+        worker = cluster.fork envs()
         pids.push worker.process.pid
       fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
 
@@ -117,20 +126,27 @@ module.exports = (grunt) ->
     pkg: grunt.file.readJSON 'package.json'
 
     restart:
-      interval: 1200
+      interval: 600
 
     clean:
-      dist: [ 'dist' ]
-      release: [ 'public' ]
+      all: [ 'dist', 'public' ]
 
     copy:
       release:
-        files: [{
-          expand: yes
-          cwd: 'app/assets/'
-          src: [ '**/*', '!**/*.{jpg,png,gif,coffee,styl,jade}' ]
-          dest: 'public'
-        }]
+        files: [
+          {
+            expand: yes
+            cwd: 'app/assets/'
+            src: [ '**/*', '!**/*.{jpg,png,gif,coffee,styl,jade}' ]
+            dest: 'public'
+          }
+          {
+            expand: yes
+            cwd: 'app/vendor/'
+            src: [ '**/*' ]
+            dest: 'public/vendor'
+          }
+        ]
 
     imagemin:
       dist:
@@ -148,11 +164,9 @@ module.exports = (grunt) ->
         indentation:
           value: 2
         newlines_after_classes:
-          level: 'error'
+          level: 'ignore'
         no_empty_param_list:
           level: 'error'
-        no_unnecessary_fat_arrows:
-          level: 'ignore'
       client:
         files: [
           { expand: yes, cwd: 'app/assets/', src: [ '**/*.coffee' ] }
@@ -285,7 +299,7 @@ module.exports = (grunt) ->
         files: [ 'app/assets/**/*.styl' ]
       jade:
         tasks: [ 'buildhtml' ]
-        files: [ 'app/assets/**/*.jade' ]
+        files: [ 'app/**/*.jade' ]
       test:
         tasks: [ 'test', 'restart' ]
         files: [

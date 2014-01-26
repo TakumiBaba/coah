@@ -3,8 +3,12 @@ html
   head
     title coah
     link(rel='stylesheet', href='/css/style.css')
+    script(data-main='/js/config', src='/vendor/requirejs/require.js')
 
-  body(onload='init()')
+  body
     h1 Coah
     img(src='/img/coah.png', width=88)
-    script(src='/js/script.js')
+
+    script#tmpl-test(type='text/template')
+      include ../templs/test.jade
+

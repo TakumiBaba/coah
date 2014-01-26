@@ -10,7 +10,4 @@ exports.Content = (app) ->
 
   user: (req, res, next) ->
     debug 'user'
-    # User.findOne name: req.params.username, {}, {}, (err, user) ->
-    #   debug err if err
     return res.render 'user'
-
