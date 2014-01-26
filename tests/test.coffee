@@ -1,55 +1,41 @@
-# Environment
-
-process.env.NODE_ENV = 'test'
-
-# Dependencies
-
-_ = require 'lodash'
 fs = require 'fs'
 path = require 'path'
+_ = require 'lodash'
+ioc = require 'socket.io-client'
 assert = require 'assert'
 request = require 'supertest'
-{app} = require '../config/app.coffee'
-direquire = require 'direquire'
+
+if fs.existsSync path.resolve 'config', 'env.json'
+  _.extend process.env, require path.resolve 'config', 'env'
+
+delete process.env.PORT
+process.env.NODE_ENV = 'test'
+process.env.SESSION_SECRET or= process.env.SECURITYSESSIONID
+
+{io, app, server} = require '../config/app.coffee'
+
+createClient = (server, opts = {}) ->
+  addr = server.address()
+  addr = server.listen().address() unless addr
+  opts['force new connection'] = yes
+  return ioc.connect "ws://#{addr.address}:#{addr.port}", opts
 
 describe 'coah', ->
 
-  # direquire
+  it 'should be display index', (done) ->
+    index = fs.readFileSync (path.resolve 'public', 'index.html'), 'utf-8'
+    request(app).get('/').expect(200).expect(index).end(done)
 
-  it 'should be load events from directory', (done) ->
-    fromDir = direquire path.resolve 'app', 'events'
-    fromApp = app.get 'events'
-    if _.keys(fromDir).toString() is _.keys(fromApp).toString()
-      return done null
-    return done no
+  it 'socket should ping pong', (done) ->
+    socket = createClient server
 
-  it 'should be load models from directory', (done) ->
-    fromDir = direquire path.resolve 'app', 'models'
-    fromApp = app.get 'models'
-    if _.keys(fromDir).toString() is _.keys(fromApp).toString()
-      return done null
-    return done no
+    close = (err) ->
+      err = (new Error err) if err
+      socket.removeAllListeners 'ping'
+      socket.removeAllListeners 'pong'
+      socket.disconnect()
+      return done err
 
-  it 'should be load helper from directory', (done) ->
-    fromDir = direquire path.resolve 'app', 'helper'
-    fromApp = app.get 'helper'
-    if _.keys(fromDir).toString() is _.keys(fromApp).toString()
-      return done null
-    return done no
-
-  # テストすることがない
-
-  #it 'sohuld be index', (done) ->
-  #  request(app)
-  #    .get('/')
-  #    .expect(200)
-  #    .end done
-
-  #it 'should be static file serving', (done) ->
-  #  file = fs.readFileSync path.resolve('public', 'css', 'style.css'), 'utf-8'
-  #  request(app)
-  #    .get('/css/style.css')
-  #    .expect(200)
-  #    .expect(file)
-  #    .end done
+    socket.on 'pong', -> close null
+    socket.emit 'ping'
 

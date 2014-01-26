@@ -10,8 +10,8 @@ direquire = require 'direquire'
 
 # Database
 
-if process.env.ENABLE_MONGODB
-  mongoose.connect process.env.ENABLE_MONGODB
+unless process.env.DISABLE_MONGODB
+  mongoose.connect process.env.MONGO_DB
 
 # Application
 
@@ -49,7 +49,7 @@ route.http app
 
 # WebSocket
 
-if parseInt process.env.ENABLE_WEBSOCKET
+unless parseInt process.env.DISABLE_WEBSOCKET
   redis = require 'socket.io/node_modules/redis'
   io = exports.io = (require 'socket.io').listen server
   io.set 'log level', 0
