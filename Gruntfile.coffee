@@ -293,7 +293,7 @@ module.exports = (grunt) ->
         files: [ 'assets/**/*.styl' ]
       jade:
         tasks: [ 'buildhtml' ]
-        files: [ 'assets/**/*.jade' ]
+        files: [ '{assets,templs}/**/*.jade' ]
       test:
         tasks: [ 'test', 'restart' ]
         files: [
