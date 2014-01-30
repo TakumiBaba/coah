@@ -28,7 +28,6 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-notify'
 
   grunt.registerTask 'build', [
-    'clean'
     'buildjs'
     'buildcss'
     'buildhtml'
