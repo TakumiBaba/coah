@@ -8,6 +8,8 @@ cluster = require 'cluster'
 
 module.exports = (grunt) ->
 
+  pkg = grunt.file.readJSON 'package.json'
+
   require 'coffee-script'
   require 'coffee-errors'
 
@@ -33,60 +35,13 @@ module.exports = (grunt) ->
     'buildstatic'
   ]
 
+  grunt.registerTask 'default', [
+    'build', 'test', 'watch'
+  ]
+
   grunt.registerTask 'test', [
     'coffeelint:server'
     'simplemocha'
-  ]
-
-  grunt.registerTask 'restart', 'Graceful restart', ->
-    done = @async()
-    pids = JSON.parse fs.readFileSync (path.resolve './.pids'), 'utf-8'
-
-    async.eachSeries pids, (pid, next) ->
-      setTimeout ->
-        process.kill pid
-        return next()
-      , grunt.config 'restart.interval'
-    , done
-
-  grunt.registerTask 'server', 'Start coah web server.', ->
-    done = @async()
-    pids = []
-
-    if cluster.isMaster
-      cpus = os.cpus().length
-      grunt.log.writeln "#{cpus} cluster ##{process.pid}"
-      process.on 'SIGINT', ->
-        fs.unlinkSync path.resolve '.pids'
-        process.exit 130
-      cluster.on 'exit', (worker) ->
-        grunt.log.writeln "coah worker exit ##{worker.process.pid}"
-        delete require.cache[path.resolve 'config', 'env.json']
-        for pid, i in pids when worker.process.pid is pid
-          pids.splice i, 1
-          worker = cluster.fork require path.resolve 'config', 'env'
-          pids.push worker.process.pid
-          break
-        fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
-      for i in [0...cpus]
-        worker = cluster.fork(require path.resolve 'config', 'env')
-        pids.push worker.process.pid
-      fs.writeFileSync (path.resolve './.pids'), JSON.stringify pids
-
-    else
-      {server} = require path.resolve 'config', 'app'
-      server.listen (process.env.PORT || 3000), ->
-        grunt.log.write "coah listening"
-        grunt.log.write " on port #{process.env.PORT || 3000}"
-        grunt.log.write " with mode #{process.env.NODE_ENV}"
-        grunt.log.writeln " ##{process.pid}"
-
-  grunt.registerTask 'all', [
-    'build', 'test', 'run', 'watch'
-  ]
-
-  grunt.registerTask 'default', [
-    'build', 'test', 'watch'
   ]
 
   grunt.registerTask 'buildjs', [
@@ -112,22 +67,87 @@ module.exports = (grunt) ->
     'imagemin'
   ]
 
+  grunt.registerTask 'restart', 'Graceful restart', ->
+    done = @async()
+    pids = JSON.parse fs.readFileSync (path.resolve './.pids'), 'utf-8'
+
+    if pids.length < os.cpus().length
+      pids.push no for i in [pids.length...cpus]
+
+    async.eachSeries pids, (pid, next) ->
+      setTimeout ->
+        try
+          process.kill pid if pid
+        catch e
+          grunt.log.error e.message
+        finally
+          next()
+      , grunt.config 'restart.interval'
+    , done
+
+  grunt.registerTask 'server', 'Start web server.', ->
+    done = @async()
+    pids = []
+
+    if cluster.isMaster
+      envs = grunt.config 'server.env'
+      cpus = os.cpus().length
+
+      process.on 'SIGINT', ->
+        fs.unlinkSync grunt.config 'server.pid'
+        process.exit 130
+
+      cluster.on 'exit', (worker) ->
+        for pid, i in pids when worker.process.pid is pid by -1
+          pids.splice i, 1
+          worker = cluster.fork envs
+          pids.push worker.process.pid
+          break
+        fs.writeFileSync (grunt.config 'server.pid'), JSON.stringify pids
+
+      for i in [0...cpus]
+        worker = cluster.fork envs
+        pids.push worker.process.pid
+      fs.writeFileSync (grunt.config 'server.pid'), JSON.stringify pids
+
+    else
+      process.env.PORT or= 3000
+      process.env.NODE_ENV or= 'development'
+      {server} = require grunt.config 'server.app'
+      server.listen process.env.PORT, ->
+        grunt.log.write "#{pkg.name} listening"
+        grunt.log.write " on port #{process.env.PORT}"
+        grunt.log.write " with mode #{process.env.NODE_ENV}"
+        grunt.log.writeln " ##{process.pid}"
+
   grunt.initConfig
 
-    pkg: grunt.file.readJSON 'package.json'
+    pkg: pkg
+
+    server:
+      pid: path.resolve './.pids'
+      app: path.resolve 'config', 'app'
+      env: grunt.file.readJSON 'config/env.json'
 
     restart:
-      interval: 1200
+      interval: 600
 
     clean:
       dist: [ 'dist' ]
       release: [ 'public' ]
 
     copy:
+      dist:
+        files: [{
+          expand: yes
+          cwd: 'assets'
+          src: [ '**/*', '!**/*.{coffee,styl,jade}' ]
+          dest: 'dist'
+        }]
       release:
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '**/*', '!**/*.{jpg,png,gif,coffee,styl,jade}' ]
           dest: 'public'
         }]
@@ -136,9 +156,9 @@ module.exports = (grunt) ->
       dist:
         files: [{
           expand: yes
-          cwd: 'app/assets/'
+          cwd: 'assets'
           src: [ '**/*.{jpg,png,gif}' ]
-          dest: 'public/'
+          dest: 'public'
         }]
 
     coffeelint:
@@ -153,17 +173,8 @@ module.exports = (grunt) ->
           level: 'error'
         no_unnecessary_fat_arrows:
           level: 'ignore'
-      client:
-        files: [
-          { expand: yes, cwd: 'app/assets/', src: [ '**/*.coffee' ] }
-        ]
-      server:
-        files: [
-          { expand: yes, cwd: 'app/events/', src: [ '**/*.coffee' ] }
-          { expand: yes, cwd: 'app/helper/', src: [ '**/*.coffee' ] }
-          { expand: yes, cwd: 'app/models/', src: [ '**/*.coffee' ] }
-          { expand: yes, cwd: 'tests/', src: [ '**/*.coffee' ] }
-        ]
+      client: 'assets/**/*.coffee'
+      server: '{events,helper,models,config,tests}/**/*.coffee'
 
     csslint:
       options:
@@ -186,7 +197,7 @@ module.exports = (grunt) ->
         'unqualified-attributes': off
       client:
         files: [
-          { expand: yes, cwd: 'dist/', src: [ '**/*.styl' ] }
+          { expand: yes, cwd: 'dist', src: [ '**/*.styl' ] }
         ]
 
     htmlhint:
@@ -194,16 +205,19 @@ module.exports = (grunt) ->
         'tag-pair': on
       client:
         files: [
-          { expand: yes, cwd: 'dist/', src: [ '**/*.html' ] }
+          { expand: yes, cwd: 'dist', src: [ '**/*.html' ] }
         ]
 
     coffee:
       dist:
+        options:
+          sourceMap: yes
+          sourceMapDir: 'assets/'
         files: [{
           expand: yes
-          cwd: 'app/assets/'
-          src: [ '*.coffee', '**/*.coffee' ]
-          dest: 'dist/'
+          cwd: 'assets'
+          src: [ '**/*.coffee' ]
+          dest: 'dist'
           ext: '.js'
         }]
 
@@ -213,9 +227,9 @@ module.exports = (grunt) ->
           compress: no
         files: [{
           expand: yes
-          cwd: 'app/assets/'
-          src: [ '*.styl', '**/*.styl' ]
-          dest: 'dist/'
+          cwd: 'assets'
+          src: [ '**/*.styl' ]
+          dest: 'dist'
           ext: '.css'
         }]
       release:
@@ -223,9 +237,9 @@ module.exports = (grunt) ->
           compress: yes
         files: [{
           expand: yes
-          cwd: 'app/assets/'
-          src: [ '*.styl', '**/*.styl' ]
-          dest: 'public/'
+          cwd: 'assets'
+          src: [ '**/*.styl' ]
+          dest: 'public'
           ext: '.css'
         }]
 
@@ -235,9 +249,9 @@ module.exports = (grunt) ->
           pretty: yes
         files: [{
           expand: yes
-          cwd: 'app/assets/'
-          src: [ '*.jade', '**/*.jade' ]
-          dest: 'dist/'
+          cwd: 'assets'
+          src: [ '**/*.jade' ]
+          dest: 'dist'
           ext: '.html'
         }]
       release:
@@ -245,9 +259,9 @@ module.exports = (grunt) ->
           pretty: no
         files: [{
           expand: yes
-          cwd: 'app/assets/'
-          src: [ '*.jade', '**/*.jade' ]
-          dest: 'public/'
+          cwd: 'assets'
+          src: [ '**/*.jade' ]
+          dest: 'public'
           ext: '.html'
         }]
 
@@ -255,9 +269,9 @@ module.exports = (grunt) ->
       release:
         files: [{
           expand: yes
-          cwd: 'dist/'
-          src: [ '*.js', '**/*.js' ]
-          dest: 'public/'
+          cwd: 'dist'
+          src: [ '**/*.js' ]
+          dest: 'public'
           ext: '.js'
         }]
 
@@ -276,19 +290,18 @@ module.exports = (grunt) ->
         interrupt: yes
       static:
         tasks: [ 'buildstatic' ]
-        files: [ 'app/assets/**/*', '!app/assets/**/*.{coffee,styl,jade}' ]
+        files: [ 'assets/**/*', '!assets/**/*.{coffee,styl,jade}' ]
       coffee:
         tasks: [ 'buildjs' ]
-        files: [ 'app/assets/**/*.coffee' ]
+        files: [ 'assets/**/*.coffee' ]
       stylus:
         tasks: [ 'buildcss' ]
-        files: [ 'app/assets/**/*.styl' ]
+        files: [ 'assets/**/*.styl' ]
       jade:
         tasks: [ 'buildhtml' ]
-        files: [ 'app/assets/**/*.jade' ]
+        files: [ 'assets/**/*.jade' ]
       test:
         tasks: [ 'test', 'restart' ]
         files: [
-          '{tests,config}/**/*.{js,coffee,json}'
-          'app/{events,helper,models}/**/*.{js,coffee}'
+          '{events,helper,models,config,tests}/**/*.{js,coffee}'
         ]

@@ -3,6 +3,7 @@
 
 node_modules
 
+*.map
 dist
 public
 config/env.json

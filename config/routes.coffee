@@ -4,3 +4,6 @@ exports.http = (app) ->
 
   app.get '/', Content.index
 
+
+#exports.websocket = (app, io) ->
+

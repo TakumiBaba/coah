@@ -18,10 +18,10 @@ if process.env.MONGO
 
 app = exports.app = express()
 app.disable 'x-powerd-by'
-app.set 'events', direquire path.resolve 'app', 'events'
-app.set 'models', direquire path.resolve 'app', 'models'
-app.set 'helper', direquire path.resolve 'app', 'helper'
-app.set 'views', path.resolve 'app', 'views'
+app.set 'events', direquire path.resolve 'events'
+app.set 'models', direquire path.resolve 'models'
+app.set 'helper', direquire path.resolve 'helper'
+app.set 'views', path.resolve 'views'
 app.set 'view engine', 'jade'
 app.use express.favicon()
 app.use express.logger 'dev' unless process.env.NODE_ENV is 'test'
@@ -29,10 +29,15 @@ app.use express.json()
 app.use express.urlencoded()
 app.use express.methodOverride()
 app.use app.router
-app.use express.static path.resolve 'public'
+if process.env.NODE_ENV is 'development'
+  app.use express.static path.resolve 'dist'
+  app.use (req, res) ->
+    express.static(path.resolve './')(req, res) if /^\/assets\//.test req.url
+  app.use express.errorHandler()
+else
+  app.use express.static path.resolve 'public'
 
 if process.env.NODE_ENV isnt 'production'
-  app.use express.errorHandler()
   debug "using error handler"
 
 # Server
